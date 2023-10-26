@@ -1,0 +1,1178 @@
+<apex:page controller="PaymentManagementAppController" sidebar="false" docType="html-5.0" showHeader="false" lightningStylesheets="true" standardStyleSheets="false" cache="false" title="Payment Center" applyBodyTag="false" applyHtmlTag="false">
+    
+    
+    <html>
+        <head>
+            <title>Payment Center</title>
+            <apex:slds />
+            <link rel="icon" href="" type="image/png"/>
+        </head> 
+        <apex:includeLightning />
+        
+        <body class="slds-scope" style="background:#F5F5F5" >
+            <!--onload="loadHostedPage()"-->
+            <apex:includeScript value="{!$Resource.payment_page_jquery_1_9_1}" />
+            
+            
+            <apex:form id="myForm" >
+                <article class="slds-card " style="box-shadow: 0 2px 2px 0 rgb(0 0 0 / 10%); background:{!colourCodeHeaderBackground}; min-width: 1350px;">
+                    <div class="slds-p-around_small slds-p-right_large" style="align-self:center">
+                        
+                        <!-- Main -->  
+                        <div class="slds-scope">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_12-of-12 ">
+                                    <apex:image id="logo" value="{!$Resource.z_Customer_Logo}" style="max-width:150px;padding-top:4px;;border-radius:15px;"></apex:image>
+                                    <span class="slds-p-left_small slds-text-color_weak slds-text-heading_large" style="color: #225595;vertical-align:middle"><b>{!customMetadataTitle}</b></span>
+                                    <div class="slds-float_right slds-p-right_small">
+                                        <apex:commandButton styleClass="slds-button slds-button_brand" style="border-radius: 16px;margin: 10px;margin-right:12px; !important" action="{!showSupportPopup}" status="loading" value="Support"  rerender="popup" />
+                                        <apex:outputPanel rendered="{!isuserValid}" >
+                                            <apex:commandButton styleClass="slds-button slds-button_destructive" style="border-radius: 16px;margin: 10px;margin-right:28px;padding-left: 27px;padding-right: 27px;" action="{!paymentPageLogout}" status="loading" rerender="logout"  value="Logout" />
+                                        </apex:outputPanel>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                
+                <apex:pageBlock mode="maindetail" id="paymentDetailsPage" >
+                    <apex:outputPanel id="mainPanel">
+                        <div class="slds-p-around_large" style="min-width:1350px;">
+                            <div style="min-width: 1200px;">
+                                <!--Header bar with refresh and contact support button Start -->
+                                <apex:outputPanel rendered="{!stageName=='zero'}" >
+                                    <span class="slds-text-heading_small"><b>{!accountName}:</b></span>
+                                    <span class="slds-text-heading_small">You have the following item(s) awaiting your action at this time</span>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!stageName=='InvoicePayment'}" >
+                                    <span class="slds-text-heading_small"><b>{!accountName}:</b></span>
+                                    <span class="slds-text-heading_small">Choose your payment method</span>
+                                </apex:outputPanel>
+                                <div class="slds-float_right slds-p-right_x-medium ">
+                                    
+                                    <apex:outputPanel rendered="{!isuserValid}" >
+                                        </apex:outputPanel>
+                                </div> 
+                            </div>
+                            <br/>
+                            
+                            <!--Header bar with refresh and contact support button End-->
+                            
+                            <!--Login and Authentication Section Start -->
+                            <apex:outputPanel styleClass="" rendered="{!IF(stageName=='LoginPage', TRUE, False)}">  
+                                <center>
+                                    <div class="slds-page-header slds-m-right_xx-large slds-m-left_xx-large" style="border-radius: 5px;box-shadow: 0 2px 2px 0 rgb(0 0 0 / 30%);background:#FFFFFF;border: 3px solid #E6F3FB;align:center;margin-bottom:300px;margin-left: 22%;margin-right: 22%;" >
+                                        
+                                        <div> <br/>
+                                            
+                                            <div class=" slds-text-align_center" ><b style="background:#E6F3FB;border-radius: 5px;font-size: 13px;">&nbsp;&nbsp;{!LoginWord}&nbsp;&nbsp;</b></div>
+                                            
+                                            <apex:outputPanel styleClass="slds-text-color_error" rendered="{!errorFlag}">
+                                                <br/><center>{!errorMessage}</center>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel styleClass="slds-text-color_error" rendered="{!!errorFlag}"><br/><br/></apex:outputPanel>
+                                            <div class="slds-grid slds-grid_align-center slds-align_absolute-center ">
+                                                <div class="slds-col slds-size_2-of-5" >
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-p-bottom_small slds-form-element__control">
+                                                            <apex:inputText style="height:35px" styleClass="slds-input" value="{!username}" html-placeholder="name@company.com"   title="Please Enter a valid Billing Email Address." onkeypress="return check(event);"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element">
+                                                        <div class="slds-form-element__control">
+                                                            <apex:inputText style="height:35px"  styleClass="slds-input" value="{!password}" html-placeholder="Invoice Number" onkeypress="return check(event);" />
+                                                            <!--  onkeypress="{!validatePassKey}"  -->
+                                                        </div>
+                                                    </div>
+                                                    <br/><br/>
+                                                    <center><apex:commandButton style="height:34px; border-radius:16px;padding-left: 30%;padding-right: 30%;" styleClass=" slds-button slds-button_brand btn-primary" action="{!validatePassKey}"  status="loading" rerender="paymentDetailsPage"  value="Verify >" id="login" /></center>
+                                                    <br/>
+                                                   
+                                                    <apex:actionFunction action="{!validatePassKey}" name="enterKeyAction" status="loading" rerender="paymentDetailsPage"/>
+                                                </div>
+                                                <br/><br/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </center>
+                            </apex:outputPanel>
+                            <!--Login and Authentication Section End  -->
+                            
+                            <!--First Landing Page Start -->
+                            <apex:outputPanel rendered="{!IF(stageName=='zero', TRUE, False)}">
+                                <!-- New Invoice Design Section -->
+                                <apex:outputPanel layout="block" styleClass=""  rendered="{!IF(invoiceDisplayingData.size>0, true, false)}" > 
+                                    
+                                    <div class="slds-card slds-p-around_small " style="border-radius: 5px;box-shadow: 0 2px 2px 0 rgb(0 0 0 / 30%);background:{!colourCodeinvoiceCardBackground};border: 2px solid #E6F3FB;min-width:1300px" >   
+                                        <div class="slds-grid slds-gutters" style="min-width:1300px">
+                                            <div class="slds-col slds-size_1-of-3">
+                                                <span class="slds-text-heading_medium slds-p-left_small">Invoices</span><span class="slds-text-heading_small">({!invoiceRecordSize})</span>
+                                                
+                                            </div>
+                                            <div class="slds-col slds-size_2-of-3">
+                                                
+                                                
+                                                <apex:outputPanel rendered="{!IF(Version == 'Full Version', TRUE, False)}">
+                                                    <div class=" slds-p-right_xx-small" ><b style="background:#E6F3FB;border-radius: 5px;font-size:13px;padding-left:2%;padding-right:2%;">&nbsp;&nbsp;You can select more than one invoice to pay them together &nbsp;&nbsp;</b></div>
+                                                    
+                                                </apex:outputPanel>
+                                            </div>
+                                            
+                                            
+                                            <apex:commandButton styleClass="slds-button slds-button_outline-brand" 
+                                                                style="width:80px; background:#2980B9;height:35px;border-radius: 16px;margin-left:-10%; color:white;" 
+                                                                action="{!redirect}" 
+                                                                status="loading"
+                                                                rerender="paymentDetailsPage"                        
+                                                                value="Refresh"/>
+                                            
+                                        </div> <br/>
+                                        <div>
+                                            
+                                            <div style="height:100% !important" class="slds-p-around_x-small">
+                                                <apex:repeat var="d" value="{!invoiceData}"  >
+                                                    <article class="slds-card " style="border-radius: 15px;box-shadow: 3px 3px 5px #B1B1B1; background:#E6F3FB;height: 100px;min-width:1150px ">
+                                                        <div class="slds-grid ">
+                                                           
+                                                            <div class="slds-col slds-size_3-of-12   slds-p-around_x-small" style="height: 100px;">
+                                                               
+                                                                <table>
+                                                                    
+                                                                    <apex:outputPanel rendered="{!IF(HidingInvoiceNumberField==true, TRUE, False)}">
+                                                                        <apex:outputPanel >
+                                                                            <tr>
+                                                                                <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >{!InvoiceNumber}</span></b>
+                                                                                    
+                                                                                    <span class=" slds-text-color_weak"><apex:outputField value="{!d.invoice.Name}"/></span>
+                                                                                    <!-- slds-float_right -->
+                                                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                                </td>
+                                                                            </tr>
+                                                                        </apex:outputPanel>
+                                                                    </apex:outputPanel>
+                                                                    <apex:outputPanel rendered="{!IF(HidingInvoiceDateField==true, TRUE, False)}">
+                                                                        
+                                                                        
+                                                                        <tr>
+                                                                            
+                                                                            <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >{!InvoiceDate}</span></b>
+                                                                                
+                                                                                
+                                                                                
+                                                                                <span class=" slds-text-color_weak"><apex:outputField value="{!d.invoice.Zuora__InvoiceDate__c}"/></span>
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                                
+                                                                            </td>
+                                                                            
+                                                                        </tr>
+                                                                        
+                                                                        
+                                                                    </apex:outputPanel>
+                                                                    
+                                                                    <apex:outputPanel rendered="{!IF(HidingInvoiceDueDateField==true, TRUE, False)}">
+                                                                        
+                                                                        <tr>
+                                                                            <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >{!InvoiceDueDate}</span></b>
+                                                                                
+                                                                                <span class="slds-text-color_weak "><apex:outputField value="{!d.invoice.Zuora__DueDate__c}"/></span>
+                                                                                <!-- slds-p-left_xxx-small slds-float_right  -->
+                                                                            </td> 
+                                                                            
+                                                                        </tr>
+                                                                        
+                                                                        
+                                                                    </apex:outputPanel>
+                                                                    
+                                                                </table>                        
+                                                            </div>
+                                                            <div class="slds-col slds-size_3-of-12 slds-p-around_x-small" >
+                                                                
+                                                            </div>
+                                                            
+                                                            
+                                                            <!-- </div>-->
+                                                            <div class="slds-col slds-size_3-of-12" style="background:#2980B9;border-top-left-radius: 1.25rem;border-bottom-left-radius: 1.25rem;" >
+                                                                <!--  <div class="slds-p-right_xxx-small"> -->
+                                                                <table  style="margin-top: 7%;" >
+                                                                    <tr>
+                                                                        <td width="50%" class="slds-float_right"><b><span class="slds-text-heading_medium" style="float:right;color:white;">{!InvoiceTotal} </span></b></td>
+                                                                        <td width="50%" class="slds-p-left_small"><span class="slds-text-heading_medium slds-text-color_weak" style="color:white;">$
+                                                                            <apex:outputText value="{0,number,#,##0.00}">
+                                                                                <apex:param value="{!d.invoice.Zuora__TotalAmount__c}"/>
+                                                                            </apex:outputText>
+                                                                            </span>&nbsp;</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td width="50%" class="slds-float_right"><b><span class="slds-text-heading_medium" style="float:right;color:white;">{!InvoiceBalance} </span></b></td>
+                                                                        <td width="50%" class="slds-p-left_small"><span class="slds-text-heading_medium slds-text-color_weak"  style="color:white;">$
+                                                                            <apex:outputText value="{0,number,#,##0.00}">
+                                                                                <apex:param value="{!d.invoice.Zuora__Balance2__c}"/>
+                                                                            </apex:outputText>
+                                                                            </span>&nbsp;</td>
+                                                                    </tr>
+                                                                </table>
+                                                                
+                                                            </div>
+                                                            <div class="slds-col slds-size_3-of-12 " style="background:#AED6F1; border-top-right-radius: 15px;border-bottom-right-radius:15px">
+                                                                
+                                                                <div class="slds-text-align_center slds-p-around_x-small" style="align-self:center;">
+                                                                    <b>Actions</b>
+                                                                </div>
+                                                                
+                                                                <div class="slds-grid slds-gutters">
+                                                                    <div class="slds-col">
+                                                                        <span></span>
+                                                                    </div>
+                                                                    
+                                                                    <div class="slds-grid">
+                                                                        
+                                                                       
+                                                                        <!---testing-->                                      
+                                                                        <apex:outputPanel rendered="{!if (Version == 'Light Version',TRUE, False)}">  
+                                                                            <div class="slds-float_left slds-p-left_x-small"> 
+                                                                                <apex:commandButton styleClass="buttoncenter slds-button slds-button_brand buttonwrapper" action="{!showPdfFrameMethod}" status="loading"  rerender="paymentDetailsPage"  value="Preview" style="border-radius: 16px;padding-left: 30px;padding-right: 30px;background-color:{!ViewButtonColour};" />
+                                                                                
+                                                                            </div>
+                                                                        </apex:outputPanel>
+                                                                         <apex:outputPanel rendered="{!if (Version == 'Light Version',TRUE, False)}">     
+                                                                            <div class="slds-float_left slds-p-left_x-small"> 
+                                                                                <apex:commandButton styleClass="buttoncenter slds-button slds-button_success buttonwrapper" action="{!showPdfPaymentFrameMethod}" status="loading" rerender="paymentDetailsPage"  value="Pay Now" style="color:white; border-radius: 16px;padding-left: 30px;padding-right: 30px;background-color: {!PayNowButtonColour} " />
+                                                                                
+                                                                            </div>              
+                                                                            
+                                                                        </apex:outputPanel>                                                                
+                                                                        
+                                                                          <apex:outputPanel rendered="{!IF(Version == 'Full Version', TRUE, False)}">
+                                                                            <div class="slds-col slds-p-around_small" style="buttonwrapper">
+                                                                                
+                                                                                <apex:inputCheckbox value="{!d.isSelected}" >
+                                                                                    <apex:actionsupport event="onclick" action="{!getSelectedInvoices}" status="loading" rerender="paymentDetailsPage"></apex:actionsupport>
+                                                                                </apex:inputCheckbox> 
+                                                                                
+                                                                            </div>
+                                                                        </apex:outputPanel>
+                                                                        
+                                                                    </div>
+                                                                    <div class="slds-col">
+                                                                        <span></span>
+                                                                    </div>
+                                                                </div> 
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </article>
+                                                </apex:repeat>
+                                                
+                                            </div>
+                                            
+                                        </div>
+                                        <br/>
+                                        
+                                        <apex:outputPanel rendered="{!IF(Version == 'Full Version', TRUE, False)}"> 
+                                            <div class="slds-float_left slds-p-left_x-small"> 
+                                                <apex:commandButton styleClass="buttoncenter slds-button slds-button_brand buttonwrapper" action="{!showPaymentMethod}" status="loading" rerender="paymentDetailsPage" disabled="{!isinvoiceSelected}" value="Select Existing Method & Pay "  /><!---old style style="border-radius: 16px;padding-left: 30px;padding-right: 30px;"-->
+                                                
+                                            </div>
+                                            
+                                            <div class="slds-float_left slds-p-left_x-small">
+                                                <apex:commandButton styleClass="buttoncenter slds-button slds-button_brand buttonwrapper" action="{!showPdfPaymentFrameMethod1}" status="loading" rerender="paymentDetailsPage" disabled="{!isinvoiceSelected}" value="Create New Method & Pay"  />
+                                                
+                                                
+                                            </div>
+                                            
+                                            <div class="slds-float_left slds-p-left_x-small"> 
+                                                <apex:commandButton styleClass="buttoncenter slds-button slds-button_brand buttonwrapper" action="{!showPdfFrameMethod1}" status="loading"  rerender="paymentDetailsPage" disabled="{!isinvoiceSelected}"  value="Preview invoice pdf" style="background-color:{!ViewButtonColour};" />
+                                                
+                                            </div>
+                                            
+                                            
+                                        </apex:outputPanel>
+                                        
+                                        
+                                        <div class="slds-float_right slds-p-right_x-small"> 
+                                            <apex:outputPanel rendered="{!IF(Version == 'Full Version', TRUE, False)}"> 
+                                                <b><span class="slds-text-heading_medium slds-text-color_weak" style="padding-top:14px"> Total :
+                                                    <apex:OutputText value="{0,number,currency}">
+                                                        <apex:param value="{!totalAmount}"/>
+                                                    </apex:OutputText>&nbsp;&nbsp; 
+                                                    </span>
+                                                </b>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{!IF(checkboxCheck==true, TRUE, False)}">
+                                                
+                                            </apex:outputPanel>
+                                        </div><br/><br/>
+                                    </div> <br/>
+                                </apex:outputPanel>
+                                
+                                <!-- New Invoice Design Section for empty invoices -->     
+                                <apex:outputPanel layout="block" styleClass=""  rendered="{!IF(invoiceDisplayingData.size==0, true, false)}"> 
+                                    <div class="slds-page-header " style="border-radius: 5px;box-shadow: 0 2px 2px 0 rgb(0 0 0 / 30%);border: 3px solid #E6F3FB;background:#ffffff;">
+                                        <span class="slds-text-heading_medium">Invoices</span><span class="slds-text-heading_small">({!invoiceDisplayingData.size})</span><br/><br/>
+                                        <div class="slds-page-header slds-m-right_xx-large slds-m-left_xx-large" style="border-radius: 7px;background:#E6F3FB;margin-left: 25rem;margin-right: 25rem;">
+                                            <p class="slds-text-heading_medium slds-align_absolute-center">All Caught Up!</p>
+                                            <p class="slds-text-title slds-align_absolute-center">You have no invoices that require your attention at this time.</p>
+                                        </div>   
+                                        <br/><br/><br/>
+                                    </div>
+                                </apex:outputPanel>
+                               
+                                
+                                <!---iframe start for payment---->
+                                <apex:repeat var="v" value="{!invoiceData}"> 
+                                    
+                                </apex:repeat>
+                                
+                                    <apex:outputPanel id="IframeSectionPayment" layout="block" rendered="{!showPdfPaymentFrame}">
+                                    
+                                    
+                                    <apex:includeLightning />
+                                    <div class="lwcWrapper">
+                                        <div id="lwcContainerAccount" class="lwcContainer"></div>
+                                    </div>
+                                    <script>
+                                    var accountIdValue = "{!JSENCODE(zuoraAccountId)}";
+                                    var invoiceIdValue = "{!JSENCODE(InvidNumber)}"; 
+                                    $Lightning.use("c:VflwcAura", function() {
+                                        $Lightning.createComponent("c:lightVersion", { 
+                                            AccountId:accountIdValue,
+                                            InvoiceId:invoiceIdValue
+                                        },
+                                                                   "lwcContainerAccount",
+                                                                   function(cmp) {
+                                                                       // LWC component has been created
+                                                                       console.log("LWC component created!");
+                                                                       
+                                                                   }
+                                                                  );
+                                    });
+                                    </script>
+                                    
+                                </apex:outputPanel> 
+                                
+                                
+                                <!-----lwc  for full version start --->
+                                
+                                <apex:outputPanel id="IframeSectionPayment1" layout="block" rendered="{!NOT(ISBLANK(selectedInvoiceIdList)) && selectedInvoiceIdList.size > 0 && showPdfPaymentFrame1}">
+                                    
+                                    
+                                    
+                                    
+                                    <style>
+                                        .lwcContainer {
+                                        padding-left: 0 !important;
+                                        margin-left: 0 !important;
+                                        }
+                                    </style> 
+                                   
+                                    <apex:includeLightning />
+                                    <div class="lwcWrapper">
+                                        <div id="lwcContainerAccount1" class="lwcContainer"></div>
+                                    </div>
+                                    <script>
+                                    var accountIdValue = "{!JSENCODE(zuoraAccountId)}";
+                                    var invoiceIdValue = "{!selectedInvoiceIdList}"; 
+                                    $Lightning.use("c:VflwcAura", function() {
+                                        $Lightning.createComponent("c:FullVersion", { 
+                                            AccountId:accountIdValue,
+                                            invoiceIdList:invoiceIdValue.split(',')
+                                        },
+                                                                   "lwcContainerAccount1",
+                                                                   function(cmp) {
+                                                                       // LWC component has been created
+                                                                       console.log("LWC component created!");
+
+                                                                   }
+                                                                  );
+                                    });
+                                    
+                                    
+                                    </script>
+                                    
+                                    
+                                </apex:outputPanel>
+                                
+                                
+                                
+
+                                
+                                
+                                <!---lwc start---->
+                                
+                                <apex:outputPanel id="IframeSection" layout="block" rendered="{!showPdfFrame}">
+                                    <apex:repeat var="s" value="{!invoiceData}" >
+                                        <apex:includeLightning />
+                                        <div class="lwcWrapper">
+                                            <div id="lwcContainer{!s.invoice.Zuora__Zuora_Id__c}" class="lwcContainer"></div>
+                                            
+                                            
+                                            <script>
+                                            $Lightning.use("c:VflwcAura", function() {
+                                                $Lightning.createComponent("c:lightVersionPdf", { invoiceId:"{!s.invoice.Zuora__Zuora_Id__c}" /* s.invoice.Zuora__Zuora_Id__c'2c92c0f87ab20b92017ac3d2920b5872'*/ },
+                                                                           "lwcContainer{!s.invoice.Zuora__Zuora_Id__c}",
+                                                                           function(cmp) {
+                                                                               // LWC component has been created
+                                                                               console.log("LWC component created!");
+                                                                           }
+                                                                          );
+                                            });
+                                            </script>
+                                        </div>
+                                    </apex:repeat>
+                                    
+                                </apex:outputPanel>
+                                
+                                
+                                
+                                
+                                <apex:outputPanel id="IframeSection1" layout="block" rendered="{!showPdfFrame1}">
+                                    <style>
+                                        .pdf-horizontal-container {
+                                        display: inline-block;
+                                        margin-right: 0.5px; /* Adjust this margin as needed to create space between PDFs */
+                                        vertical-align: top; /* Align PDFs at the top */
+                                        overflow: hidden; 
+                                        
+                                        }
+                                        
+                                        
+                                        
+                                    </style>
+                                    
+                                    
+                                    <apex:repeat var="s" value="{!selectedInvoiceIdList}" >
+                                        <apex:includeLightning />
+                                        
+                                        <div class="pdf-horizontal-container " >
+                                            
+                                            <!-- <div class="lwcWrapper">-->
+                                            <div id="lwcContainer{!s}" class="lwcContainer"></div>
+                                            
+                                            
+                                            <script>
+                                            $Lightning.use("c:VflwcAura", function() {
+                                                $Lightning.createComponent("c:FullVersionPdf", { invoiceId:"{!s}" /* s.invoice.Zuora__Zuora_Id__c'2c92c0f87ab20b92017ac3d2920b5872'*/ },
+                                                                           "lwcContainer{!s}",
+                                                                           function(cmp) {
+                                                                               // LWC component has been created
+                                                                               console.log("LWC component created!");
+                                                                           }
+                                                                          );
+                                            });
+                                            </script>
+                                        </div>
+                                    </apex:repeat>
+                                    
+                                </apex:outputPanel>                         
+                                   
+                                <!--  new code piece -->
+                                
+                                
+                                
+                                <apex:outputPanel rendered="{!NOT(ISBLANK(selectedInvoiceIdList)) && selectedInvoiceIdList.size > 0 && showPayMethod}">
+                                    
+                                    
+                                    
+                                    <apex:outputPanel layout="block" styleClass=""  rendered="{!IF(paymentMethod.size>0, true, false)}" >
+                                        
+                                        
+                                        
+                                        <div class="slds-card slds-p-around_small" style="border-radius: 5px;min-width: 1250px;box-shadow: 0 2px 2px 0 rgb(0 0 0 / 30%);border: 2px solid #E6F3FB;height:100%;vertical-align: middle;">   
+                                            <span class="slds-text-heading_medium slds-p-left_small">Payment Methods</span><!-- ({!paymentMethod.size})  -->
+                                            <div class="slds-float_right slds-p-right_small"> 
+                                               
+                                                <apex:commandButton styleClass="buttoncenter slds-button slds-button_success" style="color:white;border-radius: 16px;" action="{!sendPaymentRequestTOZuora}" status="loading" rerender="PaymentRequest123,PaymentRequest" disabled="{!isinvoiceSelected}"  value="Use Selected Payment Method" />
+                                            </div> <br/><br/>
+                                            <div style="height:100%" class="slds-p-around_x-small" Id="addrefresh">
+                                                <apex:repeat value="{!paymentMethod}" var="field" >
+                                                    <article class="slds-card  entry"   style="border-radius: 15px;min-width: 120 0px;box-shadow: 3px 3px 5px #B1B1B1; background-color: {!IF(field.Zuora__External_Id__c == selectedPaymentMethodId,'#EAFAF1','#E6F3FB')}">
+                                                        <div class="slds-grid " style="vertical-align: middle;">
+                                                            <div class="slds-col slds-size_2-of-12 slds-p-around_medium">
+                                                                <apex:outputPanel rendered="{!IF(field.Zuora__External_Id__c == selectedPaymentMethodId,true,false)}">
+                                                                    <input type="radio" name="checkboxGroup" checked="TRUE" value="{!field.Zuora__External_Id__c}" onchange="selectValue(this.value)" />
+                                                                    
+                                                                </apex:outputPanel>
+                                                                <apex:outputPanel rendered="{!IF(field.Zuora__External_Id__c != selectedPaymentMethodId,true,false)}">
+                                                                    <input type="radio" name="checkboxGroup" value="{!field.Zuora__External_Id__c}" onchange="selectValue(this.value)" />
+                                                                </apex:outputPanel>
+                                                                <div class="highlight"></div>
+                                                                <apex:image id="creditcard" value="{!If(field.Zuora__Type__c == "CreditCard", $Resource.ZCreditCard, If(field.Zuora__Type__c == "ACH", $Resource.ZACH, $Resource.z_Customer_Logo))}" style="max-width:70%;min-width:20%;align:center;"/>
+                                                            </div>
+                                                            
+                                                            <div class="slds-col slds-size_4-of-12 slds-p-around_x-small" style="vertical-align: middle;">
+                                                                <table>
+                                                                    <tr>
+                                                                        <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >Name:</span></b>
+                                                                            <span class="slds-p-left_xxx-small slds-text-color_weak ">{!IF (field.Zuora__CreditCardHolderName__c == "",field.Zuora__AchAccountName__c,field.Zuora__CreditCardHolderName__c)}</span>
+                                                                        </td>
+                                                                        
+                                                                    </tr>
+                                                                    <tr style="{!IF(field.Zuora__CreditCardMaskNumber__c=="", 'display: none;', '')}">
+                                                                        <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >Card Number:</span></b>
+                                                                            <span class="slds-p-left_xxx-small slds-text-color_weak ">{!field.Zuora__CreditCardMaskNumber__c}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr style="{!IF(field.Zuora__AchAccountNumberMask__c=="", 'display: none;', '')}">
+                                                                        <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >ACH Number:</span></b>
+                                                                            <span class="slds-p-left_xxx-small slds-text-color_weak t">{!field.Zuora__AchAccountNumberMask__c}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr style="{!IF(field.Zuora__AchBankName__c=="", 'display: none;', '')}">
+                                                                        <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >Bank Name:</span></b>
+                                                                            <span class="slds-p-left_xxx-small slds-text-color_weak ">{!field.Zuora__AchBankName__c}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr style="{!IF(field.Zuora__CreditCardType__c=="", 'display: none;', '')}">
+                                                                        <td class="slds-p-around_xx-small" style="font-size: inherit;"><b><span >Type:</span></b>
+                                                                            <span class="slds-p-left_xxx-small slds-text-color_weak ">{!field.Zuora__CreditCardType__c}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td class="slds-p-around_xx-small" style="font-size: inherit;" ><b><span >Last Transaction Status:</span></b>
+                                                                            <span class="slds-p-left_xxx-small slds-text-color_weak" style=" color:rgb(116, 116, 116)">{!IF(field.Zuora__LastTransactionStatus__c=='Approved','Successful','Failed')}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>  
+                                                            </div>
+                                                            
+                                                            <div class="slds-col slds-size_2-of-12 " style="align-self:center;vertical-align: middle;">
+                                                                <div class="slds-grid" style="align-self:center;"> 
+                                                                    <div class="slds-col slds-size_2-of-1  slds-p-right_small slds-p-left_small slds-m-top_medium" style="align-self:center;background:#2980B9;border-radius: 16px;padding-left: 18px;padding-right: 18px;" StyleClass="buttoncenter">
+                                                                        <table>
+                                                                            <tr class="slds-align_absolute-cente" style="{!IF(field.Zuora__External_Id__c != defaultPaymentMethodId, 'display: none;', '')}">
+                                                                                <td class="slds-p-around_x-small slds-align_absolute-cente slds-text-heading_x-small" style="color:white;border-radius: 16px;"><span >Default</span>
+                                                                                    
+                                                                                </td>
+                                                                            </tr>
+                                                                        </table>
+                                                                    </div>&nbsp;&nbsp; 
+                                                                    <apex:outputPanel styleClass="slds-align_absolute-cente slds-p-around_x-small" rendered="{!field.Zuora__External_Id__c == defaultPaymentMethodId && autoPay}" style="align-self:center;">
+                                                                        <span class="slds-badge slds-badge_lightest slds-m-top_medium" style="padding-left: 18px;padding-right: 18px;height:36px">Autopay</span>
+                                                                    </apex:outputPanel>
+                                                                    
+                                                                    &nbsp;&nbsp;&nbsp;
+                                                                </div>
+                                                                
+                                                            </div>
+                                                           
+                                                            <div class="slds-col slds-size_4-of-12 slds-page-header" style="background:#AED6F1; border-radius: 1rem;vertical-align: middle;">
+                                                                <div class="slds-text-body_regular buttonwrapper" style='align-self:center;'>
+                                                                    <b>Actions</b>   
+                                                                </div>
+                                                                <br/>
+                                                                <center>
+                                                                    <apex:commandButton disabled="{!IF(field.Zuora__Type__c == 'ACH',true,false)}" styleClass="buttoncenter slds-button slds-button_brand" action="{!showEditPaymentPopup}" status="loading" value="Edit" rerender="editPaymentpopup" style="border-radius: 16px;padding-left: 29px;padding-right: 29px;">
+                                                                        <apex:param name="paymentMethodId" value="{!field.Zuora__External_Id__c}" assignTo="{!selectedPaymentMethodId}"/>
+                                                                    </apex:commandButton>&nbsp;&nbsp;
+                                                                    <apex:commandButton style="color:white;border-radius: 16px;" disabled="{!IF(field.Zuora__External_Id__c == defaultPaymentMethodId,'true','false')}" styleClass="{!IF(field.Zuora__External_Id__c == defaultPaymentMethodId,'buttoncenter slds-button slds-button_success disable','buttoncenter slds-button slds-button_success')}" action="{!showDefaultPaymentPopup}" status="loading" rerender="defaultPopup"  value="Make Default">
+                                                                        <apex:param name="paymentMethodId" value="{!field.Zuora__External_Id__c}" assignTo="{!selectedPaymentMethodId}"/>
+                                                                    </apex:commandButton>&nbsp;&nbsp;
+                                                                    <apex:commandButton disabled="{!IF(field.Zuora__External_Id__c == defaultPaymentMethodId,'true','false')}" styleClass="buttoncenter slds-button slds-button_destructive" action="{!showDeletePaymentPopup}" status="loading" value="Delete" rerender="deletePopupPanel" style="border-radius: 16px;padding-left: 27px;padding-right: 27px;">
+                                                                        <apex:param name="paymentMethodId" value="{!field.Zuora__External_Id__c}" assignTo="{!selectedPaymentMethodId}"/>
+                                                                    </apex:commandButton>
+                                                                </center>
+                                                                <br/>
+                                                            </div>
+                                                        </div>
+                                                    </article>
+                                                </apex:repeat>
+                                            </div> <br/>
+                                            <div class="slds-float_right slds-p-right_x-small"> 
+                                               
+                                                <b>
+                                                    <span class="slds-text-heading_medium slds-text-color_weak" style="padding-top:14px"> Total : $
+                                                        <apex:outputText value="{0,number,#,##0.00}">
+                                                            <apex:param value="{!totalAmount}"/>
+                                                        </apex:outputText>
+                                                    </span>&nbsp;&nbsp;  
+                                                </b></div><br/><br/>
+                                        </div><br/>
+                                       
+                                        <div class="slds-text-heading_small slds-text-align_center">Autopay is available for the default payment method after payment.</div>
+                                        
+                                        
+                                    </apex:outputPanel>
+                                    
+                                    <apex:actionFunction name="selectValue" action="{!selectedPaymentMethod}" reRender="paymentDetailsPage">
+                                        <apex:param assignTo="{!selectedPaymentMethodId}" name="paymentMethodSelectedId" value=""/>
+                                    </apex:actionFunction>
+                                    <br/>
+                                    <!-- New Code End -->  
+                                    <apex:outputPanel layout="block" styleClass="" rendered="{!IF(paymentMethod.size==0, true, false)}">
+                                        <div class="slds-page-header" style="border-radius: 5px;box-shadow: 0 2px 2px 0 rgb(0 0 0 / 30%);border: 3px solid #E6F3FB;background:#ffffff;">
+                                            <span class="slds-text-heading_medium">Payment Methods</span> <!-- &nbsp;({!PaymenthodRecordSize})  -->
+                                            <div class="slds-float_right"> 
+                                                 </div> <br/><br/>
+                                            <div class="slds-page-header slds-m-right_xx-large slds-m-left_xx-large " style="background:#E6F3FB;margin-left: 13rem;margin-right: 13rem;border-radius: 7px;">
+                                                <p class="slds-text-heading_medium slds-align_absolute-center">You do not have a payment method on Account.</p>
+                                                <p class="slds-text-heading_small slds-align_absolute-center">Please select "Create New Method And Pay" to make the Payment.</p>
+                                            </div>
+                                            <br/><br/>
+                                        </div>
+                                    </apex:outputPanel> 
+                                    <br/>
+                                    
+                                </apex:outputPanel>
+                                
+                               <!---lwc end---> <br/>
+                                
+                                <apex:outputPanel rendered="{!IF(invoiceCheckbox==true, TRUE, False)}">
+                                    <c:invoicePageComponent zuoraAccountId="{!zuoraAccountId}"></c:invoicePageComponent>
+                                    <br/> </apex:outputPanel> 
+                                
+                                
+                                
+                                
+                                <apex:outputPanel rendered="{!IF(paymentCheckbox==true, TRUE, False)}">
+                                    <c:Payment_Component zuoraAccountId="{!zuoraAccountId}"></c:Payment_Component>
+                                    <br/> </apex:outputPanel>
+                                
+                                <apex:outputPanel rendered="{!IF(creditmemoCheckbox==true, TRUE, False)}">
+                                    <c:CreditMemo_Page_Component zuoraAccountId="{!zuoraAccountId}"> </c:CreditMemo_Page_Component>
+                                    <br/> </apex:outputPanel> 
+                            </apex:outputPanel>
+                            
+                            
+                        </div>
+                        
+                    </apex:outputPanel> 
+                    
+                    <!--Support Popup Start -->
+                    <apex:outputPanel id="popup">
+                        <apex:outputPanel id="popInnerOutputPnl23" layout="block" rendered="{!supportPopup}"> 
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_x-small" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+                                <div class="slds-modal__container">
+                                    <apex:commandButton value="X" styleClass="slds-button slds-button_icon slds-modal__close closeButton slds-button_icon-inverse" action="{!closeSupportPopup}" status="loading" rerender="popup"></apex:commandButton>
+                                    <div class="slds-page-header" style="border-radius: 5px;border: 1px solid rgb(201, 201, 201);">
+                                        <div>
+                                            
+                                            <p style="text-align:center;font-size: 15px;"><b>We're here to help</b></p>
+                                            <p style="text-align:center;font-size: 15px;">For any billing questions, please email or give us a call at</p><br/>
+                                            
+                                            <apex:outputPanel rendered="{!IF(ShowSupportButtonRow1==true, TRUE, False)}">
+                                                <div class="slds-grid slds-grid_align-center">
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-call" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#builder"></use>
+                                                            </svg>
+                                                            <p><a class="display-agent_home">
+                                                                {!supportDept}
+                                                                </a>
+                                                            </p>
+                                                        </span>
+                                                        <br/><br/>
+                                                    </div>
+                                                    <div class="vl"  style="border-left: 3px solid #dedad9;height: 70px;border-radius:3px;"></div> &nbsp;
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        
+                                                        <span class="slds-icon_container slds-icon-utility-email" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#email"></use>
+                                                            </svg>
+                                                            <p><a class="display-email" href="support@estuate.com">{!supportEmail}</a></p>
+                                                        </span>
+                                                    </div>&nbsp;
+                                                    <div class="vl"  style="border-left: 3px solid #dedad9;height: 70px;border-radius:3px;"></div> &nbsp;
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-call" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#call"></use>
+                                                            </svg>
+                                                            <p><a class="display-phone text-night " href="tel:(408) 946-0002">
+                                                                <span class="hidden-xs">{!supportPhone}</span>
+                                                                </a>
+                                                            </p>
+                                                        </span>
+                                                        <br/><br/>
+                                                    </div>
+                                                </div>
+                                            </apex:outputPanel>
+                                            
+                                            <apex:outputPanel rendered="{!IF(ShowSupportButtonRow2==true, TRUE, False)}">
+                                                <div class="slds-grid slds-grid_align-center">
+                                                    
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-call" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#home"></use>
+                                                            </svg>
+                                                            <p><a class="display-agent_home">
+                                                                {!supportDept2}
+                                                                </a>
+                                                            </p>
+                                                        </span>
+                                                        <br/><br/>
+                                                    </div>
+                                                    <div class="vl"  style="border-left: 3px solid #dedad9;height: 70px;border-radius:3px;"></div> &nbsp;
+                                                    
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-email" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#email"></use>
+                                                            </svg>
+                                                            <p><a class="display-email" href="support@estuate.com">{!supportEmail2}</a></p>
+                                                        </span>
+                                                    </div>&nbsp;
+                                                    <div class="vl"  style="border-left: 3px solid #dedad9;height: 70px;border-radius:3px;"></div> &nbsp;
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-call" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#call"></use>
+                                                            </svg>
+                                                            <p><a class="display-phone text-night " href="tel:(408) 946-0002">
+                                                                <span class="hidden-xs">{!supportPhone2}</span>
+                                                                </a>
+                                                            </p>
+                                                        </span>
+                                                        <br/><br/>
+                                                    </div>
+                                                </div>
+                                            </apex:outputPanel>
+                                            <apex:outputPanel rendered="{!IF(ShowSupportButtonRow3==true, TRUE, False)}">
+                                                
+                                                <div class="slds-grid slds-grid_align-center">
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-call" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#company"></use>
+                                                            </svg>
+                                                            <p><a class="display-agent_home">
+                                                                {!supportDept3}
+                                                                </a>
+                                                            </p>
+                                                        </span>
+                                                        <br/><br/>
+                                                    </div>
+                                                    <div class="vl"  style="border-left: 3px solid #dedad9;height: 70px;border-radius:3px;"></div> &nbsp;
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-email" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#email"></use>
+                                                            </svg>
+                                                            <p><a class="display-email" href="support@estuate.com">{!supportEmail3}</a></p>
+                                                        </span>
+                                                    </div>&nbsp;
+                                                    <div class="vl"  style="border-left: 3px solid #dedad9;height: 70px;border-radius:3px;"></div> &nbsp;
+                                                    <div class="slds-col slds-p-around_medium">
+                                                        <span class="slds-icon_container slds-icon-utility-call" style="text-align:center">
+                                                            <svg aria-hidden="true" class="slds-icon slds-icon-text-default">
+                                                                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/apexpages/slds/latest/assets/icons/utility-sprite/svg/symbols.svg#call"></use>
+                                                            </svg>
+                                                            <p><a class="display-phone text-night " href="tel:(408) 946-0002">
+                                                                <span class="hidden-xs">{!supportPhone3}</span>
+                                                                </a>
+                                                            </p>
+                                                        </span>
+                                                        <br/><br/>
+                                                    </div>
+                                                </div>
+                                                
+                                            </apex:outputPanel>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                            <!--</div>-->
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!--Support Popup End -->
+                    
+                    <!-- Delete Contacts POPUP Start -->
+                    <apex:outputPanel id="deletePopupPanel">
+                        <apex:outputPanel id="deletePopupInner" layout="block" rendered="{!DeletePaymentPopupFlag}">
+                            
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true">
+                                <div class="slds-modal__container">
+                                    <apex:commandButton style="border-radius: 16px;" value="X" styleClass="slds-button slds-button_icon slds-modal__close closeButton" action="{!closeDeletePaymentPopup}" status="loading" rerender="deletePopupPanel"></apex:commandButton>
+                                    <div class="slds-page-header" style="border-radius: 5px;border: 1px solid rgb(201, 201, 201);">
+                                        <div>
+                                            <p style="text-align:center;font-size: 15px;">
+                                                Are you sure you want to delete this payment method?    
+                                            </p>  
+                                            <br/>
+                                            <div class="slds-grid slds-grid_align-center">
+                                                <div class="slds-col">
+                                                   
+                                                    <apex:commandButton style="color:white;border-radius: 16px;padding-left: 30px;padding-right: 30px;" styleClass="slds-button slds-button_success" action="{!deleteNonDefaultPaymentMethod}" status="loading" rerender="deletePopupPanel,paymentDetailsPage" value="Yes"></apex:commandButton>
+                                                    
+                                                    <apex:commandButton style="border-radius: 16px;padding-left: 30px;padding-right: 30px;" styleClass="slds-button slds-button_destructive" action="{!closeDeletePaymentPopup}" status="loading" rerender="deletePopupPanel" value="No"></apex:commandButton>
+                                                </div>&nbsp;
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                            <!--</div>-->
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!-- Delete Contacts POPUP End -->
+                    
+                    <!-- Set Default POPUP Start -->
+                    <apex:outputPanel id="defaultPopup">
+                        <apex:outputPanel id="defaultPopupInner" layout="block" rendered="{!DefaultPaymentPopupFlag}">
+                            <!--<div id="deletePopup" class="modal slds-scope"  tabindex="-1" role="dialog" aria-labelledby="modal-heading-01" aria-hidden="true">-->
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true">
+                                <div class="slds-modal__container">
+                                    <apex:commandButton style="border-radius: 16px;" value="X" styleClass="slds-button slds-button_icon slds-modal__close closeButton" action="{!closeDefaultPaymentPopup}" status="loading" rerender="defaultPopup"></apex:commandButton>
+                                    <div class="slds-page-header" style="border-radius: 5px;border: 1px solid rgb(201, 201, 201);">
+                                        <div>
+                                            <p style="text-align:center;font-size: 15px;">
+                                                
+                                                Changing the default payment method will remove autopay.<br/>
+                                                Are you sure you want to change the default payment method?
+                                            </p>  
+                                            <br/>
+                                            <div class="slds-grid slds-grid_align-center">
+                                                <div class="slds-col">
+                                                    <!--<button style="color:white" class="slds-button slds-button_success" onclick="deletePaymentMethodAction();" >Yes</button>-->
+                                                    <apex:commandButton style="color:white;border-radius: 16px;padding-left: 30px;padding-right: 30px;" styleClass="slds-button slds-button_success" action="{!setAsDefaultPaymentMethod}" status="loading" rerender="defaultPopup,paymentDetailsPage" value="Yes"></apex:commandButton>
+                                                    <!--<button class="slds-button slds-button_destructive" onclick="closedeleteModal()">No</button>  -->
+                                                    <apex:commandButton style="border-radius: 16px;padding-left: 30px;padding-right: 30px;" styleClass="slds-button slds-button_destructive" action="{!closeDefaultPaymentPopup}" status="loading" rerender="defaultPopup" value="No"></apex:commandButton>
+                                                </div>&nbsp;
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                            <!--</div>-->
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!-- Set Default POPUP End -->
+                    
+                    <!--Edit Payment Method Popup Start -->
+                    <apex:outputPanel id="editPaymentpopup">
+                        <apex:outputPanel id="popInnerOutput21" layout="block" rendered="{!showPaymentPopup}">
+                            <apex:outputPanel id="popupEdit">
+                                <!--<section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_x-small" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">-->
+                                <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_x-small" aria-labelledby="modal-heading-01" aria-modal="true">    
+                                    <div class="slds-modal__container">
+                                        <header class="slds-modal__header">
+                                            
+                                            <apex:commandButton value="X" styleClass="slds-button slds-button_icon slds-modal__close closeButton" action="{!closeEditPaymentPopup}" status="loading" rerender="editPaymentpopup"></apex:commandButton>
+                                            <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Edit Payment Method</h2>
+                                        </header>
+                                        <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                                            <div class="slds-card">
+                                                <div class ="slds-p-around_small">
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="text-input-id-47">
+                                                            Name</label>
+                                                        <div class="slds-p-bottom_small slds-form-element__control">
+                                                            <apex:inputText disabled="true" style="height:35px" styleClass="slds-input" value="{!paymentMethodMap[selectedPaymentMethodId].Zuora__CreditCardHolderName__c}"  title="Name"/>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="text-input-id-47">
+                                                            Card Number</label>
+                                                        <div class="slds-p-bottom_small slds-form-element__control">
+                                                            <apex:inputText disabled="true" style="height:35px" styleClass="slds-input" value="{!paymentMethodMap[selectedPaymentMethodId].Zuora__CreditCardMaskNumber__c}"  title="Name"/>
+                                                        </div>
+                                                    </div> 
+                                                    
+                                                    <!-- Edit Selection -->
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="text-input-id-47">
+                                                            <abbr class="slds-required" title="required">* </abbr>Expiration Month</label>
+                                                        <div class="slds-p-bottom_small slds-form-element__control">
+                                                            <apex:selectList style="height:35px" styleClass="slds-input" value="{!Expirymoth}" id="ExpireMonths" size="1" > 
+                                                                <apex:selectOptions value="{!ExpireMonths}"/>
+                                                            </apex:selectList>
+                                                        </div>
+                                                    </div> 
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="text-input-id-47">
+                                                            <abbr class="slds-required" title="required">* </abbr> Expiration Year</label>
+                                                        <div class="slds-p-bottom_small slds-form-element__control">
+                                                            <apex:selectList style="height:35px" styleClass="slds-input" value="{!Expiryyear}" id="ExpireYears" size="1" > 
+                                                                <apex:selectOptions value="{!ExpireYears}"/>
+                                                            </apex:selectList>
+                                                        </div>
+                                                    </div> 
+                                                    <div class="slds-form-element">
+                                                        <label class="slds-form-element__label" for="text-input-id-47">
+                                                            <abbr class="slds-required" title="required">* </abbr>Security Code</label>
+                                                        <div class="slds-p-bottom_small slds-form-element__control">
+                                                            <apex:inputText style="height:35px" styleClass="slds-input" value="{!Cvv}" label="security code" maxlength="4" />
+                                                        </div>
+                                                    </div>                                              
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <footer class="slds-modal__footer">
+                                            <apex:commandButton style="height:35px" styleClass=" slds-button slds-button_brand btn-primary" action="{!EditPaymentOperation}" status="loading" value="Save" rendered="{!renderHPM && !hasConfigError && !showSuccessMessage && !messageTesting && !isSuccess}" rerender="editPaymentpopup"/>
+                                        </footer>
+                                    </div>
+                                </section>
+                                <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!--Edit Payment Method Popup End -->
+                    
+                    <!-- Invoice Payment  POPUP Screen -->
+                    <apex:outputPanel id="PaymentRequest">
+                        <apex:outputPanel id="popInnerPaymentRequest" layout="block" rendered="{!PaymentProcessPopup}">
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true">
+                                <div class="slds-modal__container">
+                                    <!--     <apex:commandButton value="X" styleClass="slds-button slds-button_icon-inverse slds-modal__close closeButton" action="{!closedPaymentProcessPopup}" status="loading" rerender="PaymentRequest"></apex:commandButton> -->
+                                    <div class="slds-page-header" style="margin-left: 7rem;margin-right: 7rem;box-shadow: 0 2px 2px 0 rgb(0 0 0 / 10%);border-radius: 10px;border: 4px solid rgb(216, 230, 254);">
+                                        <p style="text-align:center;font-size:25px;">
+                                            <span class="slds-badge slds-p-right_xx-small" style="background:#E6F3FB;border-radius: 5px;padding-left:12%;padding-right:12%;font-size:16px;" >
+                                                <b>{!paymentMessage}</b><br/>
+                                            </span>
+                                        </p> <br/>
+                                        <apex:outputPanel rendered="{!paymentSuccess && autopay==false && defaultPaymentMethodId!=null}" >
+                                            <!--  <apex:outputPanel rendered="{!deleteaccessPM}">  -->
+                                            <div class="slds-grid slds-grid_align-center">
+                                                <div class="slds-col slds-size_3-of-1">
+                                                    <apex:inputCheckBox value="{!autopayEnable}" label="Enable autopay using default payment method"/>
+                                                </div>&nbsp;
+                                                <div class="slds-col slds-size_3-of-1">
+                                                    <span class="slds-icon_container slds-icon-utility-call" style="text-align:center">
+                                                        <p>
+                                                            Enable autopay using default payment method
+                                                        </p>
+                                                    </span>
+                                                </div><br/>
+                                            </div>
+                                            <!--   </apex:outputPanel> -->
+                                        </apex:outputPanel>
+                                        <br/>
+                                        <div class="slds-form-element slds-form-element__control">
+                                            <div class="slds-grid slds-grid_align-center">
+                                                <div class="slds-col">
+                                                    <apex:commandButton style="border-radius: 16px;padding-left: 35px;padding-right: 35px;" value="Invoices" styleClass="slds-button slds-align_absolute-center slds-button_brand" rendered="{!paymentSuccess}" action="{!closedPaymentProcessPopup}" status="loading" rerender="PaymentRequest,paymentDetailsPage,autopayPopupPanel"></apex:commandButton>
+                                                </div> &nbsp;&nbsp;
+                                                <div class="slds-col">
+                                                    <apex:commandButton style="border-radius: 16px;" value="Payment Methods" styleClass="slds-button slds-align_absolute-center slds-button_brand" rendered="{!paymentSuccess}" action="{!renderpaymentmethodPopup}" status="loading" rerender="PaymentRequest,paymentDetailsPage,autopayPopupPanel"></apex:commandButton>
+                                                </div>  
+                                                <apex:commandButton style="border-radius: 16px;padding-left: 30px;padding-right: 30px;" value="Ok" styleClass="slds-button slds-align_absolute-center slds-button_brand" rendered="{!!paymentSuccess}" action="{!paymentfailPopup}" status="loading" rerender="PaymentRequest,paymentDetailsPage"></apex:commandButton>
+                                                
+                                                
+                                            </div>
+                                        </div>
+                                        <br/>
+                                    </div>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>  
+                    <!-- Invoice Payment  POPUP Screen End -->
+                    
+                    
+                    <!-- Autopay enable POPUP Screen start -->
+                    <apex:outputPanel id="autopayPopupPanel">
+                        <apex:outputPanel id="autopayPopupInner" layout="block" rendered="{!autopayEnable}">
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true">
+                                <div class="slds-modal__container">
+                                    <apex:commandButton style="border-radius: 16px;" value="X" styleClass="slds-button slds-button_icon slds-modal__close closeButton" action="{!closeDeletePaymentPopup}" status="loading" rerender="autopayPopupPanel"></apex:commandButton>
+                                    <div class="slds-page-header" style="border-radius: 5px;border: 1px solid rgb(201, 201, 201);">
+                                        <div>
+                                            <p style="text-align:center;font-size: 15px;">
+                                                Are you sure you want to enable autopay to default payment method?    
+                                            </p>  
+                                            <br/>
+                                            <div class="slds-grid slds-grid_align-center">
+                                                <div class="slds-col">
+                                                    <apex:commandButton style="color:white;border-radius: 16px;padding-left: 30px;padding-right: 30px;" styleClass="slds-button slds-button_success" action="{!pleaseenableAutopay}" status="loading" rerender="deletePopupPanel,paymentDetailsPage" value="Yes"></apex:commandButton>
+                                                    <apex:commandButton style="border-radius: 16px;padding-left: 30px;padding-right: 30px;" styleClass="slds-button slds-button_destructive" action="{!dontAutopay}" status="loading" rerender="paymentDetailsPage" value="No"></apex:commandButton>
+                                                </div>&nbsp;
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    
+                    <!-- Autopay enable POPUP Screen End -->            
+                    
+                    <!-- FinalScreen -->
+                    <apex:outputPanel id="finalScreen">
+                        <apex:outputPanel rendered="{!IF(stageName =='FinalScreen', TRUE, False)}">
+                            <div class="slds-page-header" style="border-radius: 5px;box-shadow: 3px 3px 5px #B1B1B1;border: 1px solid rgb(201, 201, 201);background:#E6F3FB;">
+                                <div class=" slds-p-around_medium" id="modal-content-id-1">
+                                    <div class ="slds-p-around_large">
+                                        <!--    <div class="slds-page-header" > -->
+                                        <div class="slds-form-element slds-form-element__control">
+                                            <span class="slds-text-heading_small slds-align_absolute-center slds-p-top_xx-large" >Payment Complete. We appreciate your business!</span>
+                                        </div>  <br/>
+                                        <!--    </div> -->
+                                        <div class="slds-form-element slds-form-element__control">
+                                            <apex:commandButton style="border-radius: 16px;" value="Home" styleClass="slds-button slds-align_absolute-center slds-button_brand" action="{!backToHome}" status="loading" rerender="paymentDetailsPage"></apex:commandButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br/><br/>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <!-- FinalScreen End -->
+                    
+                </apex:pageBlock> 
+                <apex:actionStatus id="loading" >
+                    <apex:facet name="start" >
+                        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.25; z-index: 1000; background-color: black;">
+                            &nbsp;
+                        </div>
+                        <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 9999; margin: 1% 45%">
+                            <div class="slds-spinner slds-spinner_medium slds-spinner_inverse">
+                                <span class="slds-assistive-text">Loading</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                                
+                            </div>
+                        </div>
+                    </apex:facet>
+                </apex:actionStatus>
+                
+                
+                <!-- Start Delete Payment Method after Payment --> 
+                <apex:outputPanel id="PaymentRequest123">
+                    <apex:outputPanel id="popInnerPaymentRequest" layout="block" rendered="{!isdeletepaymentmethod}">
+                        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true">
+                            <div class="slds-modal__container">
+                                <div class="slds-page-header" style="margin-left: 7rem;margin-right: 7rem;box-shadow: 0 2px 2px 0 rgb(0 0 0 / 10%);border-radius: 10px;border: 4px solid rgb(216, 230, 254);">
+                                    
+                                    <apex:outputPanel rendered="{!isdeletepaymentmethod && selectedPaymentMethodId!=null && selectedPaymentMethodId!=defaultPaymentMethodId}" >
+                                        <p style="text-align:center;font-size:25px;">
+                                            <span class="slds-badge slds-p-right_xx-small" style="background:#E6F3FB;border-radius: 5px;padding-left:12%;padding-right:12%;" >
+                                                
+                                                <b> Do you want to keep this Credit Card/ACH Account on file after payment?</b>
+                                            </span>
+                                        </p> <br/>
+                                        <br/>
+                                        <div class="slds-grid slds-grid_align-center">
+                                            <div class="slds-col">
+                                                <apex:commandButton style="border-radius: 16px;padding-left: 29px;padding-right: 29px;" styleClass="slds-button slds-button_success" action="{!donotdelete}" status="loading" rerender="PaymentRequest,PaymentRequest123" value="Yes"></apex:commandButton>
+                                                <apex:commandButton style="color:white;border-radius: 16px;" styleClass="slds-button slds-button_destructive" action="{!deleteNonDefaultPaymentMethod}" status="loading" rerender="PaymentRequest,PaymentRequest123" value="No Delete"></apex:commandButton>
+                                            </div>&nbsp;
+                                        </div> <br/>
+                                        
+                                        <br/>
+                                    </apex:outputPanel>
+                                    
+                                    <apex:outputPanel rendered="{!isdeletepaymentmethod && selectedPaymentMethodId!=null && selectedPaymentMethodId==defaultPaymentMethodId}" >
+                                        <br/>
+                                        <p style="text-align:center;font-size:25px;">
+                                            <span class="slds-badge slds-p-right_xx-small" style="background:#E6F3FB;border-radius: 5px;padding-left:12%;padding-right:12%;" >
+                                                
+                                                <b>Cannot delete default payment method.</b>
+                                            </span>
+                                        </p> <br/>
+                                        <br/>
+                                        <div class="slds-grid slds-grid_align-center">
+                                            <div class="slds-col">
+                                                <apex:commandButton style="border-radius: 16px;" styleClass="slds-button slds-button_destructive" action="{!donotdelete}" status="loading" rerender="PaymentRequest,PaymentRequest123" value="Continue Payment"></apex:commandButton>
+                                            </div>&nbsp;
+                                        </div><br/><br/>
+                                    </apex:outputPanel>
+                                    
+                                </div>
+                            </div>
+                        </section>
+                        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                    </apex:outputPanel>
+                </apex:outputPanel> 
+                <!-- End Delete Payment Method after Payment --> 
+                
+                
+                <!--</body>-->
+            </apex:form>
+            
+            
+            
+            
+            
+            
+            <!-- Add Start -->
+            <apex:outputPanel id="AddPaymentMethod">
+                <apex:form >
+                    <apex:outputPanel id="addPopupInner" layout="block" rendered="{!addPaymentPopupFlag}">
+                        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true">
+                            <div class="slds-modal__container">
+                                <div class="slds-page-header" style="border-radius: 5px;border: 1px solid rgb(201, 201, 201);">
+                                    <div>
+                                        <p style="text-align:center;font-size: 15px;">
+                                            Hit proceed, to be directed to a secure webpage where you can add your new payment details.
+                                        </p>  
+                                        <br/>
+                                        <div class="slds-grid slds-grid_align-center">
+                                            <div class="slds-col">
+                                                <apex:outputPanel rendered="{!IF(zuoraAccountId!='',True,False)}"> 
+                                                    <a id='proceedPayment' onCLick="" href="https://estuate4-dev-ed.my.salesforce-sites.com/pay/Z_AddPayment?accid={!zuoraAccountId}"
+                                                       Class="slds-button slds-button_brand"
+                                                       target="__blank"  rerender="AddPaymentMethod" style="border-radius: 16px;">Proceed</a>
+                                                </apex:outputPanel>
+                                                &nbsp;<apex:commandButton style="border-radius: 16px;" styleClass="slds-button slds-button_outline-brand" action="{!closedPaymentPopup}" status="loading" rerender="paymentDetailsPage,AddPaymentMethod" value="Close"></apex:commandButton>
+                                            </div>&nbsp;
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+                    </apex:outputPanel>
+                </apex:form> 
+            </apex:outputPanel> 
+            <!-- Add POPUP End --> 
+            
+            
+            
+            <script>
+            var j$ = jQuery.noConflict();
+            </script>
+            <script type='text/javascript'>
+            function check(ev)  {
+                if (window.event && window.event.keyCode == 13 || ev.which == 13) {
+                    enterKeyAction();
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+            </script>
+            
+            <style>
+                .vl {border-left: 2px solid #dedad9;height: 95px;border-radius:1px;}
+                .v2 {border-left: 2px solid #dedad9;height: 80px;border-radius:1px;}
+                .buttonwrapper {text-align: center;}
+                .buttoncenter {position: absolute;top: 15%;}
+                .disable{background-color: rgb(201, 199, 197) !important;border-color: rgb(201, 199, 197) !important;color: white !important;}
+                article.entry {position: relative;padding: 8px;}
+                article.entry div.highlight {background-color: #fff;position: absolute;z-index: -1;top: 0px;right: 0px;bottom: 0px;left: 0px;}
+                article.entry input:checked ~ div.highlight {background-color: #EAFAF1;}
+                .td {  font: 13px/17px;}
+                .modal {display:none}
+                .closeButton {color:white !important;font-size:16px !important;}
+                .z_hppm_iframe {position:relative !important}
+                
+                .customPopup {
+                background-color: white;
+                border-style: solid;
+                border-width: 2px;
+                left: 20%;
+                padding: 10px;
+                position: absolute;
+                z-index: 9999;
+                /* These are the 3 css properties you will need to tweak so the pop 
+                up displays in the center of the screen. First set the width. Then set 
+                margin-left to negative half of what the width is. You can also add 
+                the height property for a fixed size pop up.*/
+                width: 500px;
+                top: 20%;
+                }
+                
+            </style>
+        </body>
+    </html>
+</apex:page>
